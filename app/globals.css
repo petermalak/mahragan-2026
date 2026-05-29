@@ -1,14 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  --background: #1a0f18;
-  --foreground: #f5e6c8;
-  --festival-bg: #1a0f18;
-  --festival-burgundy: #6b1d3a;
-  --festival-maroon: #3d0f28;
+  --background: #fef9e7;
+  --foreground: #2a2420;
+  --festival-bg: #fef9e7;
+  --festival-bg-elevated: #ffffff;
+  --festival-surface: #f5f0dc;
+  --festival-border: #e8dcc4;
+  --festival-royal-blue: #1a3d7a;
+  --festival-royal-blue-light: #2a5a9e;
+  --festival-maroon: #8b1a1a;
+  --festival-maroon-deep: #6b1414;
   --festival-gold: #d4af37;
-  --festival-gold-light: #f0d78c;
-  --festival-cream: #f5e6c8;
+  --festival-gold-bright: #ffd700;
+  --festival-gold-light: #b8922a;
+  --festival-gold-muted: #967018;
+  --festival-cream: #fef9e7;
+  --festival-ivory: #fffdf8;
+  --festival-sky-blue: #e8f2fa;
+  --festival-scripture-red: #a31818;
+  --festival-purple: #4b2c5e;
+  --festival-ink: #2a2420;
+  --festival-ink-muted: #5c5348;
+  --festival-wine: #8b1a1a;
+  --festival-wine-deep: #6b1414;
+  --festival-burgundy: #8b1a1a;
+  --festival-sage: #4a6b4e;
+  --festival-amber: #b8860b;
+  --festival-slate: #1a3d7a;
 }
 
 @theme inline {
@@ -21,6 +40,108 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+.text-gold {
+  color: var(--festival-gold-light);
+}
+
+.text-scripture {
+  color: var(--festival-scripture-red);
+}
+
+.text-royal {
+  color: var(--festival-royal-blue);
+}
+
+.section-title {
+  font-weight: 700;
+  color: var(--festival-royal-blue);
+  letter-spacing: -0.01em;
+}
+
+.section-subtitle {
+  color: var(--festival-ink-muted);
+  font-size: 0.875rem;
+}
+
+.church-card {
+  background: var(--festival-bg-elevated);
+  border: 1px solid var(--festival-border);
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px rgba(26, 61, 122, 0.06);
+}
+
+.church-card-elevated {
+  background: linear-gradient(
+    180deg,
+    rgba(232, 242, 250, 0.6) 0%,
+    var(--festival-bg-elevated) 100%
+  );
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 1rem;
+  box-shadow: 0 2px 16px rgba(26, 61, 122, 0.08);
+}
+
+.logo-frame {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--festival-ivory);
+  border: 2px solid var(--festival-gold);
+  box-shadow:
+    0 0 0 1px rgba(26, 61, 122, 0.08),
+    0 4px 12px rgba(26, 61, 122, 0.1);
+  overflow: hidden;
+}
+
+.stat-box {
+  background: var(--festival-surface);
+  border-radius: 0.5rem;
+}
+
+.progress-track {
+  background: var(--festival-surface);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  padding: 0.625rem 1.25rem;
+  font-weight: 600;
+  color: #fffdf8;
+  background: var(
+    --festival-gold-gradient,
+    linear-gradient(135deg, #ffd700, #d4af37, #b8922a)
+  );
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.btn-primary:hover {
+  opacity: 0.92;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  padding: 0.625rem 1.25rem;
+  font-weight: 600;
+  color: var(--festival-royal-blue);
+  border: 1px solid var(--festival-royal-blue);
+  background: var(--festival-bg-elevated);
+  transition: background 0.2s;
+}
+
+.btn-secondary:hover {
+  background: var(--festival-sky-blue);
 }
 
 @media (prefers-reduced-motion: reduce) {

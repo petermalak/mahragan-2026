@@ -11,9 +11,10 @@ import type { TeamWithMax } from "@/lib/types";
 interface TeamCardProps {
   team: TeamWithMax;
   index?: number;
+  rank?: number;
 }
 
-export function TeamCard({ team, index = 0 }: TeamCardProps) {
+export function TeamCard({ team, index = 0, rank }: TeamCardProps) {
   const reduceMotion = useReducedMotion();
   const theme = getTeamTheme(team.slug);
   const label = satisfactionLabel(team.satisfaction);
@@ -29,70 +30,99 @@ export function TeamCard({ team, index = 0 }: TeamCardProps) {
   };
   const currentPhase = getCurrentPhaseNumber(phaseStats);
   const completedPhases = getCompletedPhaseCount(phaseStats);
+  const phasePct = Math.round((completedPhases / 4) * 100);
 
   return (
     <motion.article
-      initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay: index * 0.08 }}
-      whileHover={reduceMotion ? {} : { y: -6, scale: 1.01 }}
-      className="group relative overflow-hidden rounded-2xl border border-[var(--festival-gold)]/30 shadow-lg"
+      transition={{ duration: 0.4, delay: index * 0.05 }}
+      whileHover={reduceMotion ? {} : { y: -4 }}
+      className="church-card group overflow-hidden transition-shadow hover:shadow-md"
       style={{
-        background: `linear-gradient(145deg, ${theme.gradientFrom} 0%, ${theme.gradientTo} 100%)`,
+        borderTopColor: theme.primary,
+        borderTopWidth: 3,
       }}
     >
-      <div className="relative p-5">
-        <div className="mb-4 flex items-start justify-between">
-          <div>
-            <span className="text-3xl">{theme.emoji}</span>
-            <h2 className="mt-2 text-xl font-bold text-[var(--festival-cream)]">
-              {team.nameAr}
-            </h2>
-            <p className="mt-1 text-xs text-white/55">
-              المرحلة {currentPhase}/4 · {completedPhases} مكتملة
-            </p>
+      <div
+        className="p-5"
+        style={{
+          background: `linear-gradient(180deg, ${theme.gradientFrom} 0%, ${theme.gradientTo} 100%)`,
+        }}
+      >
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-xl"
+              style={{
+                background: `${theme.primary}18`,
+                border: `1px solid ${theme.secondary}33`,
+              }}
+            >
+              {theme.emoji}
+            </span>
+            <div>
+              <h2 className="font-bold text-[var(--festival-ink)]">
+                {team.nameAr}
+              </h2>
+              <p className="text-xs text-[var(--festival-ink-muted)]">
+                المرحلة {currentPhase} من 4
+                {rank ? ` · الترتيب ${rank}` : ""}
+              </p>
+            </div>
           </div>
           <span
-            className="rounded-full border border-[var(--festival-gold)]/30 px-3 py-1 text-xs font-semibold"
-            style={{ background: `${theme.primary}44`, color: theme.accent }}
+            className="shrink-0 rounded-lg px-2 py-1 text-xs font-medium"
+            style={{
+              background: `${theme.primary}14`,
+              color: theme.accent,
+            }}
           >
             {label}
           </span>
         </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-3 text-sm">
-          <div className="rounded-lg border border-white/10 bg-black/25 p-3">
-            <p className="text-white/55">جلدر</p>
-            <p
-              className="text-lg font-bold"
-              style={{ color: theme.accent }}
-            >
-              <CountUp value={team.geldr} /> 🪙
+        <div className="mb-4">
+          <div className="mb-1.5 flex justify-between text-xs text-[var(--festival-ink-muted)]">
+            <span>تقدّم المراحل</span>
+            <span>{completedPhases}/4</span>
+          </div>
+          <div className="progress-track h-1.5">
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: theme.secondary }}
+              initial={reduceMotion ? { width: `${phasePct}%` } : { width: 0 }}
+              animate={{ width: `${phasePct}%` }}
+              transition={{ duration: 0.6 }}
+            />
+          </div>
+        </div>
+
+        <div className="mb-4 grid grid-cols-2 gap-3">
+          <div className="stat-box px-3 py-2">
+            <p className="text-[10px] uppercase tracking-wide text-[var(--festival-ink-muted)]">
+              جلدر
+            </p>
+            <p className="text-lg font-bold text-gold">
+              <CountUp value={team.geldr} />
             </p>
           </div>
-          <div className="rounded-lg border border-white/10 bg-black/25 p-3">
-            <p className="text-white/55">الرضا</p>
-            <p
-              className="text-lg font-bold"
-              style={{ color: theme.accent }}
-            >
+          <div className="stat-box px-3 py-2">
+            <p className="text-[10px] uppercase tracking-wide text-[var(--festival-ink-muted)]">
+              الرضا
+            </p>
+            <p className="text-lg font-bold" style={{ color: theme.accent }}>
               <CountUp value={team.satisfaction} />%
             </p>
           </div>
         </div>
 
-        <div className="mb-4 flex flex-wrap gap-2 text-xs text-white/75">
-          <span className="rounded-md bg-black/25 px-2 py-1">🏠 {team.houses}</span>
-          <span className="rounded-md bg-black/25 px-2 py-1">🛒 {team.markets}</span>
-          <span className="rounded-md bg-black/25 px-2 py-1">🌱 {team.crops}</span>
-        </div>
-
         <Link
           href={`/teams/${team.slug}`}
-          className="inline-flex w-full items-center justify-center rounded-xl border border-[var(--festival-gold)]/40 py-2.5 text-sm font-semibold text-[var(--festival-cream)] transition hover:bg-[var(--festival-gold)]/15"
-          style={{ background: `${theme.primary}cc` }}
+          className="block w-full rounded-lg py-2.5 text-center text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          style={{ background: theme.primary }}
         >
-          متابعة الفريق ←
+          عرض تفاصيل الفريق
         </Link>
       </div>
     </motion.article>

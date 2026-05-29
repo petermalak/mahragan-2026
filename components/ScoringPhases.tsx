@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import { FESTIVAL, PHASE_COLORS } from "@/lib/festival";
 import { getPhaseProgressList, type TeamPhaseStats } from "@/lib/phases";
 
 interface ScoringPhasesProps extends TeamPhaseStats {
@@ -34,95 +35,85 @@ export function ScoringPhases({
 
   return (
     <motion.section
-      className="rounded-2xl border border-[var(--festival-gold)]/25 bg-black/30 p-5 backdrop-blur-md md:p-6"
-      initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+      className="church-card overflow-hidden"
+      initial={reduceMotion ? false : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45 }}
     >
-      <div className="mb-6 text-center">
-        <h3 className="text-lg font-bold text-[var(--festival-cream)]">
-          مراحل التقييم والمنافسة
-        </h3>
-        <p className="mt-1 text-sm text-white/55">
-          تقدم الفريق في بناء القرية حسب نظام المهرجان
-        </p>
+      <div
+        className="border-b px-5 py-4"
+        style={{ borderColor: "var(--festival-border)" }}
+      >
+        <h3 className="section-title text-lg">مراحل التقييم</h3>
+        <p className="section-subtitle">تقدّم الفريق في بناء القرية</p>
       </div>
 
-      <div className="relative space-y-4">
-        <div
-          className="absolute right-[1.65rem] top-4 hidden h-[calc(100%-2rem)] w-0.5 sm:block"
-          style={{ background: `${accent}33` }}
-        />
-        {phases.map((item, index) => (
-          <motion.div
-            key={item.phase.id}
-            className={`relative flex gap-4 rounded-xl border p-4 transition-colors ${
-              item.currentPhase
-                ? "border-[var(--festival-gold)]/50 bg-[var(--festival-gold)]/10"
-                : item.complete
-                  ? "border-emerald-500/30 bg-emerald-500/10"
-                  : "border-white/10 bg-black/20"
-            }`}
-            initial={reduceMotion ? false : { opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.08 }}
-          >
-            <div
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg ${
-                item.complete
-                  ? "bg-emerald-600/80"
-                  : item.currentPhase
-                    ? "ring-2 ring-[var(--festival-gold)]"
-                    : "bg-white/10"
+      <div className="divide-y" style={{ borderColor: "var(--festival-border)" }}>
+        {phases.map((item, index) => {
+          const phaseColor = PHASE_COLORS[index] ?? FESTIVAL.gold;
+          return (
+            <motion.div
+              key={item.phase.id}
+              className={`px-5 py-4 ${
+                item.currentPhase ? "bg-[var(--festival-surface)]" : ""
               }`}
-              style={
-                item.currentPhase && !item.complete
-                  ? { background: `${primary}99` }
-                  : undefined
-              }
+              initial={reduceMotion ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: index * 0.05 }}
             >
-              {item.complete ? "✓" : item.phase.icon}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="mb-1 flex flex-wrap items-center gap-2">
-                <span className="font-bold text-[var(--festival-cream)]">
-                  {item.phase.title}
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <span
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-sm"
+                  style={{
+                    background: `${phaseColor}18`,
+                    color: phaseColor,
+                  }}
+                >
+                  {item.complete ? "✓" : item.phase.icon}
                 </span>
+                <div className="flex-1">
+                  <span className="font-semibold text-[var(--festival-ink)]">
+                    {item.phase.title}
+                  </span>
+                  <p className="text-xs text-[var(--festival-ink-muted)]">
+                    {item.phase.goal}
+                  </p>
+                </div>
                 {item.currentPhase && !item.complete && (
                   <span
-                    className="rounded-full px-2 py-0.5 text-xs font-semibold"
-                    style={{ background: `${accent}44`, color: accent }}
+                    className="rounded-md px-2 py-0.5 text-xs font-medium"
+                    style={{ color: phaseColor, background: `${phaseColor}14` }}
                   >
                     المرحلة الحالية
                   </span>
                 )}
                 {item.complete && (
-                  <span className="rounded-full bg-emerald-500/25 px-2 py-0.5 text-xs font-semibold text-emerald-200">
+                  <span className="rounded-md bg-[var(--festival-sage)]/15 px-2 py-0.5 text-xs text-[var(--festival-sage)]">
                     مكتملة
                   </span>
                 )}
               </div>
-              <p className="mb-2 text-sm text-white/70">{item.phase.goal}</p>
-              <p className="mb-2 text-xs text-white/50">{item.detail}</p>
-              <div className="h-2 overflow-hidden rounded-full bg-white/10">
+              <p className="mb-2 text-xs text-[var(--festival-ink-muted)]">
+                {item.detail}
+              </p>
+              <div className="progress-track h-1.5">
                 <motion.div
                   className="h-full rounded-full"
                   style={{
-                    background: item.complete
-                      ? "#34d399"
-                      : `linear-gradient(to left, ${accent}, ${primary})`,
+                    background: item.complete ? FESTIVAL.sage : phaseColor,
                   }}
-                  initial={reduceMotion ? { width: `${item.progress}%` } : { width: 0 }}
+                  initial={
+                    reduceMotion ? { width: `${item.progress}%` } : { width: 0 }
+                  }
                   animate={{ width: `${item.progress}%` }}
-                  transition={{ duration: 0.9, delay: index * 0.1 }}
+                  transition={{ duration: 0.7, delay: index * 0.08 }}
                 />
               </div>
-              <p className="mt-1 text-left text-xs text-white/45">
+              <p className="mt-1 text-left text-xs text-[var(--festival-ink-muted)]">
                 {item.progress}%
               </p>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          );
+        })}
       </div>
     </motion.section>
   );

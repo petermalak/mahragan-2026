@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
+import { FestivalLogos } from "@/components/FestivalLogos";
+import { ScriptureTagline } from "@/components/ScriptureTagline";
 import { FESTIVAL } from "@/lib/festival";
-import { slideFromRight } from "@/lib/motion";
 
 interface SiteHeaderProps {
   title?: string;
@@ -13,56 +14,51 @@ interface SiteHeaderProps {
 
 export function SiteHeader({
   title = FESTIVAL.nameAr,
-  subtitle = `نظام التقييم والمنافسة — ${FESTIVAL.currency}`,
+  subtitle = `نظام التقييم · ${FESTIVAL.currency}`,
   backHref,
 }: SiteHeaderProps) {
   const reduceMotion = useReducedMotion();
 
   return (
     <motion.header
-      className="border-b border-[var(--festival-gold)]/20 bg-black/40 backdrop-blur-md"
-      initial={reduceMotion ? false : { opacity: 0, y: -16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      className="sticky top-0 z-50 border-b backdrop-blur-md"
+      style={{
+        background: "rgba(254, 249, 231, 0.94)",
+        borderColor: "var(--festival-border)",
+      }}
+      initial={reduceMotion ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-5 sm:flex-row sm:items-center sm:justify-between">
-        <motion.div
-          variants={slideFromRight}
-          initial="hidden"
-          animate="visible"
-          transition={{ delay: 0.05 }}
-        >
-          <p className="mb-1 text-xs font-medium text-[var(--festival-gold)]">
-            {FESTIVAL.tagline}
-          </p>
-          <h1 className="text-xl font-bold text-[var(--festival-cream)] md:text-2xl">
-            {title}
-          </h1>
-          <motion.p
-            className="text-sm text-white/60"
-            initial={reduceMotion ? false : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.15 }}
-          >
-            {subtitle}
-          </motion.p>
-        </motion.div>
-        <nav className="flex gap-3 text-sm">
+      <div
+        className="h-1 w-full"
+        style={{ background: FESTIVAL.goldGradient }}
+      />
+      <div
+        className="h-0.5 w-full opacity-70"
+        style={{ background: FESTIVAL.blueGradient }}
+      />
+      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4">
+          <FestivalLogos size="sm" />
+          <div>
+            <ScriptureTagline
+              className="mb-0.5 text-xs"
+              refClassName="text-[var(--festival-ink-muted)] text-[11px]"
+            />
+            <h1 className="text-lg font-bold text-royal md:text-xl">{title}</h1>
+            <p className="section-subtitle">{subtitle}</p>
+          </div>
+        </div>
+        <nav className="shrink-0">
           {backHref ? (
-            <motion.div
-              whileHover={reduceMotion ? {} : { scale: 1.04 }}
-              whileTap={reduceMotion ? {} : { scale: 0.97 }}
-            >
-              <Link
-                href={backHref}
-                className="inline-block rounded-lg border border-[var(--festival-gold)]/35 px-4 py-2 text-[var(--festival-cream)] transition-colors hover:bg-[var(--festival-gold)]/10"
-              >
-                ← كل الفرق
-              </Link>
-            </motion.div>
+            <Link href={backHref} className="btn-secondary text-sm">
+              ← العودة للفرق
+            </Link>
           ) : (
-            <span className="rounded-lg border border-[var(--festival-gold)]/25 bg-[var(--festival-gold)]/10 px-4 py-2 text-[var(--festival-gold-light)]">
-              6 فرق
+            <span className="inline-flex items-center gap-2 rounded-lg border border-[var(--festival-border)] bg-[var(--festival-sky-blue)] px-3 py-1.5 text-xs text-royal">
+              <span>{FESTIVAL.yearGregorian}</span>
+              <span className="opacity-40">·</span>
+              <span>{FESTIVAL.yearCoptic}</span>
             </span>
           )}
         </nav>

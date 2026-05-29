@@ -59,5 +59,5 @@ export function satisfactionTier(value: number) {
   for (const tier of SATISFACTION_TIERS) {
     if (value >= tier.min) return tier;
   }
-  return { min: 0, label: "في بداية الرحلة", pct: 0, emoji: "🌱" };
+  return { min: 0, label: "في بداية الرحلة", pct: 0, color: "#8b6b5c" };
 }

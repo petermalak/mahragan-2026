@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { CountUp } from "@/components/CountUp";
 import { SATISFACTION_TIERS } from "@/lib/festival";
-import { satisfactionLabel, satisfactionTier } from "@/lib/satisfaction";
+import { satisfactionLabel } from "@/lib/satisfaction";
 
 interface SatisfactionGaugeProps {
   value: number;
@@ -18,47 +18,41 @@ export function SatisfactionGauge({
 }: SatisfactionGaugeProps) {
   const reduceMotion = useReducedMotion();
   const label = satisfactionLabel(value);
-  const tier = satisfactionTier(value);
   const circumference = 2 * Math.PI * 54;
   const offset = circumference - (value / 100) * circumference;
 
   return (
     <motion.div
-      className="relative flex flex-col items-center overflow-hidden rounded-2xl border border-[var(--festival-gold)]/25 bg-black/30 p-6 backdrop-blur-md"
-      initial={reduceMotion ? false : { opacity: 0, x: 24 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ type: "spring", stiffness: 200, damping: 22, delay: 0.08 }}
+      className="church-card-elevated flex flex-col items-center p-6"
+      initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
     >
-      <p className="mb-1 text-sm font-medium text-white/70">مؤشر رضا القرية</p>
-      <p className="mb-4 text-xs text-[var(--festival-gold)]">
-        حسب العرض: 25% · 50% · 75% · 100%
+      <p className="mb-1 text-sm text-[var(--festival-ink-muted)]">
+        مؤشر رضا القرية
       </p>
-      <div className="relative h-40 w-40">
+      <p className="mb-4 text-xs text-gold">25% · 50% · 75% · 100%</p>
+      <div className="relative h-36 w-36">
         <svg className="h-full w-full -rotate-90" viewBox="0 0 120 120">
           <circle
             cx="60"
             cy="60"
             r="54"
             fill="none"
-            stroke="rgba(255,255,255,0.1)"
-            strokeWidth="10"
+            stroke="var(--festival-surface)"
+            strokeWidth="8"
           />
           {[25, 50, 75, 100].map((mark) => {
             const angle = (mark / 100) * 360 - 90;
             const rad = (angle * Math.PI) / 180;
-            const x1 = 60 + 48 * Math.cos(rad);
-            const y1 = 60 + 48 * Math.sin(rad);
-            const x2 = 60 + 54 * Math.cos(rad);
-            const y2 = 60 + 54 * Math.sin(rad);
             return (
               <line
                 key={mark}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="rgba(212,175,55,0.45)"
-                strokeWidth="2"
+                x1={60 + 48 * Math.cos(rad)}
+                y1={60 + 48 * Math.sin(rad)}
+                x2={60 + 54 * Math.cos(rad)}
+                y2={60 + 54 * Math.sin(rad)}
+                stroke="rgba(166,139,75,0.45)"
+                strokeWidth="1.5"
               />
             );
           })}
@@ -68,7 +62,7 @@ export function SatisfactionGauge({
             r="54"
             fill="none"
             stroke={accent}
-            strokeWidth="10"
+            strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={circumference}
             initial={
@@ -77,35 +71,28 @@ export function SatisfactionGauge({
                 : { strokeDashoffset: circumference }
             }
             animate={{ strokeDashoffset: offset }}
-            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 1, ease: "easeOut" }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl">{tier.emoji}</span>
-          <motion.span
-            key={value}
-            className="text-2xl font-bold"
-            style={{ color: accent }}
-          >
+          <span className="text-2xl font-bold" style={{ color: accent }}>
             <CountUp value={value} />%
-          </motion.span>
-          <motion.span
-            className="mt-1 rounded-full px-3 py-0.5 text-xs font-semibold"
-            style={{ background: `${primary}66`, color: accent }}
+          </span>
+          <span
+            className="mt-1 rounded-md px-2 py-0.5 text-xs font-medium"
+            style={{ background: `${primary}18`, color: accent }}
           >
             {label}
-          </motion.span>
+          </span>
         </div>
       </div>
-      <div className="mt-4 grid w-full grid-cols-4 gap-1 text-center text-[10px] text-white/50">
+      <div className="mt-4 grid w-full grid-cols-4 gap-1 text-center text-[10px] text-[var(--festival-ink-muted)]">
         {SATISFACTION_TIERS.slice()
           .reverse()
           .map((t) => (
             <span
               key={t.pct}
-              className={
-                value >= t.min ? "font-semibold text-[var(--festival-gold)]" : ""
-              }
+              className={value >= t.min ? "font-semibold text-gold" : ""}
             >
               {t.pct}%
             </span>

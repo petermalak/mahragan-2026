@@ -7,11 +7,13 @@ import { ScoringPhases } from "@/components/ScoringPhases";
 import { SheetsWarningBanner } from "@/components/SheetsWarningBanner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { StatBar } from "@/components/StatBar";
+import { TeamRankBanner } from "@/components/TeamRankBanner";
 import { TeamPageMotion, TeamPageSection } from "@/components/TeamPageMotion";
+import { VillageScene } from "@/components/VillageScene";
 import { TRADE_RULES } from "@/lib/festival";
 import { getCurrentPhaseNumber } from "@/lib/phases";
 import { TEAM_SLUGS, getTeamTheme, isTeamSlug } from "@/lib/teams";
-import { getTeamBySlug } from "@/lib/sheets";
+import { getAllTeamsEnriched, getTeamBySlug } from "@/lib/sheets";
 import type { TeamSlug } from "@/lib/types";
 
 export const revalidate = 30;
@@ -45,6 +47,10 @@ export default async function TeamPage({ params }: TeamPageProps) {
     notFound();
   }
 
+  const { teams: allTeams } = await getAllTeamsEnriched();
+  const sorted = [...allTeams].sort((a, b) => b.geldr - a.geldr);
+  const rank = sorted.findIndex((t) => t.slug === team.slug) + 1;
+
   const theme = getTeamTheme(team.slug);
   const currentPhase = getCurrentPhaseNumber({
     houses: team.houses,
@@ -67,7 +73,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
       <FestivalBackground />
       <SiteHeader
         title={`فريق ${team.nameAr}`}
-        subtitle={`المرحلة ${currentPhase} من 4 · ${theme.emoji}`}
+        subtitle={`المرحلة ${currentPhase} من 4 · فريق ${team.nameAr}`}
         backHref="/"
       />
       <main className="relative mx-auto max-w-6xl px-4 py-8">
@@ -78,9 +84,24 @@ export default async function TeamPage({ params }: TeamPageProps) {
             </TeamPageSection>
           ) : null}
           <TeamPageSection>
-            <p className="mb-6 text-center text-sm text-white/55">
+            <TeamRankBanner
+              team={team}
+              rank={rank}
+              totalTeams={allTeams.length}
+            />
+            <p className="mb-6 text-center text-sm text-[var(--festival-ink-muted)]">
               آخر تحديث: {formatUpdatedAt(team.updatedAt)}
             </p>
+          </TeamPageSection>
+
+          <TeamPageSection className="mb-8">
+            <VillageScene
+              team={team}
+              primary={theme.primary}
+              secondary={theme.secondary}
+              accent={theme.accent}
+              currentPhase={currentPhase}
+            />
           </TeamPageSection>
 
           <TeamPageSection className="mb-8 grid gap-6 lg:grid-cols-2">
@@ -112,10 +133,8 @@ export default async function TeamPage({ params }: TeamPageProps) {
           </TeamPageSection>
 
           <TeamPageSection className="mb-6">
-            <div className="rounded-xl border border-[var(--festival-gold)]/20 bg-black/25 p-4 text-sm text-white/70">
-              <strong className="text-[var(--festival-gold)]">
-                {TRADE_RULES.title}:
-              </strong>{" "}
+            <div className="church-card px-5 py-4 text-sm opacity-80">
+              <strong className="text-gold">{TRADE_RULES.title}:</strong>{" "}
               {TRADE_RULES.summary}
             </div>
           </TeamPageSection>
