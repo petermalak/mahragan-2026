@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
+import { FESTIVAL } from "@/lib/festival";
 import "./globals.css";
 
 const cairo = Cairo({
@@ -9,9 +10,8 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: "مهرجان القرى 2026 | تسابق الجلدر",
-  description:
-    "نظام عرض تسابق القرى — 6 فرق، عملة الجلدر، ومؤشر رضا القرية",
+  title: `${FESTIVAL.nameAr} | نظام التقييم`,
+  description: `نظام التقييم والمنافسة — ${FESTIVAL.currency}، مراحل بناء القرية، ومؤشر الرضا`,
 };
 
 export default function RootLayout({
@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" className={`${cairo.variable} h-full`}>
-      <body className="min-h-full bg-[#0b1020] font-sans text-white antialiased">
+      <body className="min-h-full bg-[var(--festival-bg)] font-sans text-[var(--festival-cream)] antialiased">
         {children}
       </body>
     </html>

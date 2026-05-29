@@ -1,13 +1,15 @@
 import { notFound } from "next/navigation";
-import { FloatingBackground } from "@/components/FloatingBackground";
+import { FestivalBackground } from "@/components/FestivalBackground";
 import { GeldrCounter } from "@/components/GeldrCounter";
 import { OrganizerNote } from "@/components/OrganizerNote";
 import { SatisfactionGauge } from "@/components/SatisfactionGauge";
+import { ScoringPhases } from "@/components/ScoringPhases";
 import { SheetsWarningBanner } from "@/components/SheetsWarningBanner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { StatBar } from "@/components/StatBar";
 import { TeamPageMotion, TeamPageSection } from "@/components/TeamPageMotion";
-import { VillageScene } from "@/components/VillageScene";
+import { TRADE_RULES } from "@/lib/festival";
+import { getCurrentPhaseNumber } from "@/lib/phases";
 import { TEAM_SLUGS, getTeamTheme, isTeamSlug } from "@/lib/teams";
 import { getTeamBySlug } from "@/lib/sheets";
 import type { TeamSlug } from "@/lib/types";
@@ -44,18 +46,28 @@ export default async function TeamPage({ params }: TeamPageProps) {
   }
 
   const theme = getTeamTheme(team.slug);
+  const currentPhase = getCurrentPhaseNumber({
+    houses: team.houses,
+    markets: team.markets,
+    landFixed: team.landFixed,
+    crops: team.crops,
+    tradeVolume: team.tradeVolume,
+    maxLandFixed: team.maxLandFixed,
+    maxCrops: team.maxCrops,
+    maxTradeVolume: team.maxTradeVolume,
+  });
 
   return (
     <div
       className="min-h-screen"
       style={{
-        background: `linear-gradient(180deg, ${theme.gradientFrom} 0%, #0b1020 45%)`,
+        background: `linear-gradient(180deg, ${theme.gradientFrom} 0%, var(--festival-bg) 50%)`,
       }}
     >
-      <FloatingBackground accent={theme.accent} />
+      <FestivalBackground />
       <SiteHeader
-        title={`قرية ${team.nameAr}`}
-        subtitle={`${theme.emoji} فريق ${team.nameAr}`}
+        title={`فريق ${team.nameAr}`}
+        subtitle={`المرحلة ${currentPhase} من 4 · ${theme.emoji}`}
         backHref="/"
       />
       <main className="relative mx-auto max-w-6xl px-4 py-8">
@@ -85,37 +97,48 @@ export default async function TeamPage({ params }: TeamPageProps) {
           </TeamPageSection>
 
           <TeamPageSection className="mb-8">
-            <VillageScene
+            <ScoringPhases
               houses={team.houses}
               markets={team.markets}
               landFixed={team.landFixed}
               crops={team.crops}
               tradeVolume={team.tradeVolume}
+              maxLandFixed={team.maxLandFixed}
+              maxCrops={team.maxCrops}
+              maxTradeVolume={team.maxTradeVolume}
               primary={theme.primary}
-              secondary={theme.secondary}
               accent={theme.accent}
             />
           </TeamPageSection>
 
+          <TeamPageSection className="mb-6">
+            <div className="rounded-xl border border-[var(--festival-gold)]/20 bg-black/25 p-4 text-sm text-white/70">
+              <strong className="text-[var(--festival-gold)]">
+                {TRADE_RULES.title}:
+              </strong>{" "}
+              {TRADE_RULES.summary}
+            </div>
+          </TeamPageSection>
+
           <TeamPageSection className="mb-8 grid gap-4 sm:grid-cols-2">
             <StatBar
-              label="البيوت"
+              label="البيوت (مرحلة 1)"
               value={team.houses}
-              max={team.maxHouses}
+              max={Math.max(team.maxHouses, 4)}
               icon="🏠"
               accent={theme.accent}
               delay={0}
             />
             <StatBar
-              label="الأسواق"
+              label="الأسواق (مرحلة 1)"
               value={team.markets}
-              max={team.maxMarkets}
+              max={Math.max(team.maxMarkets, 1)}
               icon="🛒"
               accent={theme.accent}
               delay={0.05}
             />
             <StatBar
-              label="أراضٍ مُصلَحة"
+              label="أراضٍ مُصلَحة (مرحلة 2)"
               value={team.landFixed}
               max={team.maxLandFixed}
               icon="🌾"
@@ -123,7 +146,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
               delay={0.1}
             />
             <StatBar
-              label="المحاصيل"
+              label="المحاصيل (مرحلة 3)"
               value={team.crops}
               max={team.maxCrops}
               icon="🌱"
@@ -131,7 +154,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
               delay={0.15}
             />
             <StatBar
-              label="حجم التداول"
+              label="التداول (مرحلة 4)"
               value={team.tradeVolume}
               max={team.maxTradeVolume}
               icon="💱"

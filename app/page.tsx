@@ -1,5 +1,6 @@
-import { FloatingBackground } from "@/components/FloatingBackground";
+import { FestivalBackground } from "@/components/FestivalBackground";
 import { HomeHero } from "@/components/HomeHero";
+import { ScoringGuide } from "@/components/ScoringGuide";
 import { SheetsWarningBanner } from "@/components/SheetsWarningBanner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { TeamCard } from "@/components/TeamCard";
@@ -12,10 +13,11 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen">
-      <FloatingBackground accent="#14b8a6" />
+      <FestivalBackground />
       <SiteHeader />
       <main className="relative mx-auto max-w-6xl px-4 py-10">
         {warning ? <SheetsWarningBanner warning={warning} /> : null}
+        <ScoringGuide />
         <HomeHero />
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {teams.map((team, i) => (
