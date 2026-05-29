@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# مهرجان القرى 2026 — نظام عرض التسابق
 
-## Getting Started
+موقع عرض لـ **6 فرق** يتسابقون في بناء القرى بعملة **الجلدر**، مع مؤشر رضا القرية. البيانات تُحدَّث يدوياً من **Google Sheets** ويُعرض الموقع على **Vercel**.
 
-First, run the development server:
+## الفرق
+
+| الفريق | الرابط |
+|--------|--------|
+| الحامول | `/teams/al-hamoul` |
+| مطوبس | `/teams/matoubas` |
+| أبو المطامير | `/teams/abo-al-matameer` |
+| الدلنجات | `/teams/al-dalangat` |
+| فرشوط | `/teams/farshout` |
+| الترامسة | `/teams/al-tramssa` |
+
+## التشغيل محلياً
 
 ```bash
+npm install
+cp .env.example .env.local
+# عدّل .env.local بقيم Google (أو اتركه فارغاً لبيانات تجريبية)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+افتح [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## إعداد Google Sheets
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. أنشئ مشروعاً في [Google Cloud Console](https://console.cloud.google.com).
+2. فعّل **Google Sheets API**.
+3. أنشئ **Service Account** وحمّل مفتاح JSON.
+4. أنشئ الشيت حسب [docs/sheet-template.md](docs/sheet-template.md).
+5. **مهم:** شارك الشيت مع `client_email` من المفتاح (صلاحية **Viewer** فقط).
+   - بدون هذه الخطوة يظهر الخطأ: `The caller does not have permission` (403).
+6. تأكد أن تبويب الورقة اسمه **`Teams`** بالضبط.
+6. انسخ إلى `.env.local`:
 
-## Learn More
+```env
+GOOGLE_SHEETS_ID=...
+GOOGLE_SERVICE_ACCOUNT_EMAIL=...
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+```
 
-To learn more about Next.js, take a look at the following resources:
+> في Vercel: الصق المفتاح كسطر واحد مع `\n` الحرفية بين أسطر المفتاح.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## النشر على Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. ارفع المشروع إلى GitHub.
+2. [vercel.com](https://vercel.com) → Import Project → اختر المستودع.
+3. أضف المتغيرات الثلاثة في **Environment Variables**.
+4. Deploy.
 
-## Deploy on Vercel
+التحديث من الشيت يظهر على الموقع خلال ~30 ثانية (ISR).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## API
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`GET /api/teams` — JSON بكل الفرق (للتصحيح).
+
+## حساب مؤشر الرضا
+
+إذا عمود `satisfaction` فارغ في الشيت:
+
+```
+min(100, houses×4 + markets×6 + land_fixed×3 + crops×2 + min(trade_volume/10, 25))
+```
+
+عدّل الأوزان في `lib/satisfaction.ts` إن لزم.
+
+## التقنيات
+
+- Next.js 16 (App Router)
+- Tailwind CSS 4
+- Framer Motion
+- googleapis (قراءة فقط من Sheets)
