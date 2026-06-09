@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { FestivalLogos } from "@/components/FestivalLogos";
 import { ScriptureTagline } from "@/components/ScriptureTagline";
 import { FESTIVAL } from "@/lib/festival";
@@ -17,8 +17,6 @@ export function SiteHeader({
   subtitle = `نظام التقييم · ${FESTIVAL.currency}`,
   backHref,
 }: SiteHeaderProps) {
-  const reduceMotion = useReducedMotion();
-
   return (
     <motion.header
       className="sticky top-0 z-50 border-b backdrop-blur-md"
@@ -26,7 +24,7 @@ export function SiteHeader({
         background: "rgba(254, 249, 231, 0.94)",
         borderColor: "var(--festival-border)",
       }}
-      initial={reduceMotion ? false : { opacity: 0 }}
+      initial={false}
       animate={{ opacity: 1 }}
     >
       <div
@@ -55,11 +53,25 @@ export function SiteHeader({
               ← العودة للفرق
             </Link>
           ) : (
-            <span className="inline-flex items-center gap-2 rounded-lg border border-[var(--festival-border)] bg-[var(--festival-sky-blue)] px-3 py-1.5 text-xs text-royal">
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href="/attendance"
+                className="btn-secondary text-xs sm:text-sm"
+              >
+                تسجيل الحضور
+              </Link>
+              <Link
+                href="/scores"
+                className="btn-secondary text-xs sm:text-sm"
+              >
+                ترتيب المشاركين
+              </Link>
+              <span className="inline-flex items-center gap-2 rounded-lg border border-[var(--festival-border)] bg-[var(--festival-sky-blue)] px-3 py-1.5 text-xs text-royal">
               <span>{FESTIVAL.yearGregorian}</span>
               <span className="opacity-40">·</span>
               <span>{FESTIVAL.yearCoptic}</span>
             </span>
+            </div>
           )}
         </nav>
       </div>

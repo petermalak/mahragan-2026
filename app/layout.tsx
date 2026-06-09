@@ -24,8 +24,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" className={`${cairo.variable} h-full`}>
-      <body className="min-h-full bg-[var(--festival-bg)] font-sans text-[var(--foreground)] antialiased">
+    <html lang="ar" dir="rtl" className={`${cairo.variable} h-full`} suppressHydrationWarning>
+      <body
+        className="min-h-full bg-[var(--festival-bg)] font-sans text-[var(--foreground)] antialiased"
+        suppressHydrationWarning
+      >
         {children}
       </body>
     </html>

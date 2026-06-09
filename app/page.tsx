@@ -2,6 +2,7 @@ import { CollapsibleScoringGuide } from "@/components/ScoringGuide";
 import { FestivalBackground } from "@/components/FestivalBackground";
 import { HomeHero } from "@/components/HomeHero";
 import { Leaderboard } from "@/components/Leaderboard";
+import { ParticipantsLeaderboard } from "@/components/ParticipantsLeaderboard";
 import { SheetsWarningBanner } from "@/components/SheetsWarningBanner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { TeamCard } from "@/components/TeamCard";
@@ -34,6 +35,7 @@ export default async function HomePage() {
           ))}
         </div>
         <Leaderboard teams={teams} />
+        <ParticipantsLeaderboard limit={10} />
         <CollapsibleScoringGuide />
       </main>
     </div>

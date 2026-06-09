@@ -10,13 +10,14 @@ interface CountUpProps {
 
 export function CountUp({ value, className }: CountUpProps) {
   const reduceMotion = useReducedMotion();
-  const [display, setDisplay] = useState(reduceMotion ? value : 0);
+  const [display, setDisplay] = useState(value);
 
   useEffect(() => {
     if (reduceMotion) {
       setDisplay(value);
       return;
     }
+    setDisplay(0);
     const controls = animate(0, value, {
       duration: 1.1,
       ease: [0.22, 1, 0.36, 1],

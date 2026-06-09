@@ -2,9 +2,12 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { FESTIVAL } from "@/lib/festival";
+import { useIsMounted } from "@/lib/useIsMounted";
 
 export function FestivalBackground() {
   const reduceMotion = useReducedMotion();
+  const mounted = useIsMounted();
+  const showMotion = mounted && !reduceMotion;
 
   return (
     <div className="pointer-events-none fixed inset-0 overflow-hidden">
@@ -24,14 +27,14 @@ export function FestivalBackground() {
         className="absolute inset-x-0 top-0 h-px opacity-50"
         style={{ background: FESTIVAL.goldGradient }}
       />
-      {!reduceMotion && (
+      {showMotion ? (
         <motion.div
           className="absolute -right-32 top-16 h-80 w-80 rounded-full blur-3xl"
           style={{ background: "rgba(232,242,250,0.5)" }}
           animate={{ opacity: [0.4, 0.7, 0.4] }}
           transition={{ duration: 14, repeat: Infinity }}
         />
-      )}
+      ) : null}
     </div>
   );
 }

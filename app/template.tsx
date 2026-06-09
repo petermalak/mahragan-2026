@@ -1,11 +1,13 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import { useIsMounted } from "@/lib/useIsMounted";
 
 export default function Template({ children }: { children: React.ReactNode }) {
   const reduceMotion = useReducedMotion();
+  const mounted = useIsMounted();
 
-  if (reduceMotion) {
+  if (!mounted || reduceMotion) {
     return <>{children}</>;
   }
 
