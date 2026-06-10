@@ -144,6 +144,72 @@ body {
   background: var(--festival-sky-blue);
 }
 
+.qr-scanner-wrap {
+  position: relative;
+  width: 100%;
+  min-height: 300px;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #1a2433;
+}
+
+.qr-scanner-view {
+  width: 100%;
+  min-height: 300px;
+}
+
+.qr-scanner-view video {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 360px;
+  object-fit: cover;
+  display: block;
+}
+
+.qr-scanner-view video:not(:first-of-type) {
+  display: none !important;
+}
+
+.qr-scanner-view img:not(:first-of-type) {
+  display: none !important;
+}
+
+.qr-scanner-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: rgba(26, 36, 51, 0.92);
+  color: #fef9e7;
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 1rem;
+}
+
+.qr-scanner-placeholder--error {
+  background: rgba(107, 20, 20, 0.9);
+}
+
+.qr-scanner-spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  border-top-color: var(--festival-gold);
+  border-radius: 50%;
+  animation: qr-spin 0.8s linear infinite;
+}
+
+@keyframes qr-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
