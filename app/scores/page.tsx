@@ -15,11 +15,11 @@ export default function ScoresPage() {
       <FestivalBackground />
       <SiteHeader
         title="ترتيب المشاركين"
-        subtitle="من تبويب users · Score"
+        subtitle="بعدد النقاط — من الأعلى إلى الأقل"
         backHref="/"
       />
       <main className="relative mx-auto max-w-3xl px-4 py-8">
-        <ParticipantsLeaderboard limit={100} showViewAll={false} />
+        <ParticipantsLeaderboard limit={500} showViewAll={false} />
         <p className="mt-6 text-center text-sm text-[var(--festival-ink-muted)]">
           <Link href="/attendance" className="text-gold hover:underline">
             تسجيل حضور جديد

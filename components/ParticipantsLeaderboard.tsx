@@ -25,18 +25,29 @@ export async function ParticipantsLeaderboard({
         style={{ borderColor: "var(--festival-border)" }}
       >
         <div>
-          <h2 className="section-title text-lg">ترتيب المشاركين</h2>
-          <p className="section-subtitle">حسب عمود Score في الشيت</p>
+          <h2 className="section-title text-lg md:text-xl">ترتيب المشاركين</h2>
+          <p className="section-subtitle">
+            بعدد النقاط — من الأعلى إلى الأقل
+            {!showViewAll && participants.length > 0
+              ? ` · ${participants.length} مشارك`
+              : ""}
+          </p>
         </div>
-        {showViewAll ? (
-          <Link href="/scores" className="text-sm text-gold hover:underline">
-            عرض الكل
+        {showViewAll && participants.length > limit ? (
+          <Link href="/scores" className="text-sm font-semibold text-gold hover:underline">
+            عرض الكل ({participants.length})
           </Link>
         ) : null}
       </div>
 
       {demo ? (
-        <p className="border-b px-5 py-2 text-xs text-amber-800" style={{ borderColor: "var(--festival-border)", background: "#fffbeb" }}>
+        <p
+          className="border-b px-5 py-2 text-xs text-amber-800"
+          style={{
+            borderColor: "var(--festival-border)",
+            background: "#fffbeb",
+          }}
+        >
           بيانات تجريبية — تأكد من تبويب users والصلاحيات
         </p>
       ) : null}
@@ -51,10 +62,10 @@ export async function ParticipantsLeaderboard({
           return (
             <li
               key={p.id}
-              className="flex items-center gap-3 px-5 py-3 sm:gap-4"
+              className="flex items-center gap-3 px-5 py-3.5 sm:gap-4"
             >
               <span
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold sm:h-9 sm:w-9 sm:text-sm"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold sm:h-10 sm:w-10"
                 style={{
                   background:
                     rank <= 3 && theme
@@ -69,7 +80,7 @@ export async function ParticipantsLeaderboard({
                 {medal}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium text-[var(--festival-ink)]">
+                <p className="truncate text-base font-semibold text-[var(--festival-ink)]">
                   {theme ? `${theme.emoji} ` : ""}
                   {p.nameAr}
                 </p>
@@ -78,9 +89,14 @@ export async function ParticipantsLeaderboard({
                   {p.teamLabel ? ` · ${p.teamLabel}` : ""}
                 </p>
               </div>
-              <span className="shrink-0 font-bold tabular-nums text-gold">
-                <CountUp value={p.points} />
-              </span>
+              <div className="shrink-0 text-left">
+                <p className="font-bold tabular-nums text-gold text-lg sm:text-xl">
+                  <CountUp value={p.points} />
+                </p>
+                <p className="text-[10px] text-[var(--festival-ink-muted)]">
+                  نقطة
+                </p>
+              </div>
             </li>
           );
         })}

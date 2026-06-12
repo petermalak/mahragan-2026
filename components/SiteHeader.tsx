@@ -54,12 +54,12 @@ export function SiteHeader({
             </Link>
           ) : (
             <div className="flex flex-wrap items-center gap-2">
-              <Link
+              {/* <Link
                 href="/attendance"
                 className="btn-secondary text-xs sm:text-sm"
               >
                 تسجيل الحضور
-              </Link>
+              </Link> */}
               <Link
                 href="/scores"
                 className="btn-secondary text-xs sm:text-sm"

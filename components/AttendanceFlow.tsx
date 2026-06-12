@@ -1,6 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ParticipantNamePicker,
+  type PickableParticipant,
+} from "@/components/ParticipantNamePicker";
 import { QrScanner } from "@/components/QrScanner";
 import {
   ATTENDANCE_SCORES,
@@ -26,11 +30,14 @@ interface AttendanceFlowProps {
   initialId?: string;
 }
 
+type InputMode = "scan" | "name";
+
 function newQueueKey(id: string) {
   return `${id}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
 export function AttendanceFlow({ initialId }: AttendanceFlowProps) {
+  const [mode, setMode] = useState<InputMode>("scan");
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [demo, setDemo] = useState(false);
   const [status, setStatus] = useState("");
@@ -60,6 +67,17 @@ export function AttendanceFlow({ initialId }: AttendanceFlowProps) {
     setError("");
     setLastSaved(null);
   }, []);
+
+  const addByParticipant = useCallback(
+    (participant: PickableParticipant, isDemo: boolean) => {
+      const now = Date.now();
+      const last = recentScansRef.current.get(participant.id.toLowerCase());
+      if (last && now - last < 800) return;
+      recentScansRef.current.set(participant.id.toLowerCase(), now);
+      addToQueue(participant, isDemo);
+    },
+    [addToQueue],
+  );
 
   const lookupAndAdd = useCallback(
     async (raw: string) => {
@@ -184,8 +202,8 @@ export function AttendanceFlow({ initialId }: AttendanceFlowProps) {
     <div className="mx-auto max-w-lg space-y-5">
       <ol className="church-card space-y-2 p-4 text-base leading-relaxed text-[var(--festival-ink)]">
         <li>
-          <span className="font-bold text-royal">١.</span> وجّه الكاميرا نحو
-          الباركود
+          <span className="font-bold text-royal">١.</span> امسح الباركود{" "}
+          <strong>أو</strong> اختر الاسم من القائمة
         </li>
         <li>
           <span className="font-bold text-royal">٢.</span> اختر النقاط لكل
@@ -197,63 +215,115 @@ export function AttendanceFlow({ initialId }: AttendanceFlowProps) {
         </li>
       </ol>
 
-      {demo ? (
+      {demo && mode === "scan" ? (
         <p className="rounded-xl bg-amber-50 px-4 py-3 text-center text-base text-amber-900">
           وضع تجريبي — لن تُحفظ البيانات في الشيت
         </p>
       ) : null}
 
       <div className="church-card overflow-hidden p-4">
-        <p className="mb-3 text-center text-lg font-bold text-royal">
-          مسح الباركود
-        </p>
-        <div className="relative">
-          <QrScanner
-            onScan={lookupAndAdd}
-            onError={setError}
-            paused={lookingUp || submitting}
-          />
-          {lookingUp ? (
-            <div
-              className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/50 text-lg font-bold text-white"
-              aria-live="polite"
-            >
-              جاري التحقق…
-            </div>
-          ) : null}
+        <div
+          className="mb-4 grid grid-cols-2 gap-2 rounded-xl bg-[var(--festival-surface)] p-1"
+          role="tablist"
+          aria-label="طريقة الإضافة"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "scan"}
+            className="min-h-12 rounded-lg text-base font-bold transition-colors"
+            style={{
+              background:
+                mode === "scan" ? "var(--festival-bg-elevated)" : "transparent",
+              color:
+                mode === "scan"
+                  ? "var(--festival-royal-blue)"
+                  : "var(--festival-ink-muted)",
+              boxShadow:
+                mode === "scan" ? "0 1px 4px rgba(26,61,122,0.12)" : "none",
+            }}
+            onClick={() => setMode("scan")}
+          >
+            مسح باركود
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "name"}
+            className="min-h-12 rounded-lg text-base font-bold transition-colors"
+            style={{
+              background:
+                mode === "name" ? "var(--festival-bg-elevated)" : "transparent",
+              color:
+                mode === "name"
+                  ? "var(--festival-royal-blue)"
+                  : "var(--festival-ink-muted)",
+              boxShadow:
+                mode === "name" ? "0 1px 4px rgba(26,61,122,0.12)" : "none",
+            }}
+            onClick={() => setMode("name")}
+          >
+            اختيار بالاسم
+          </button>
         </div>
 
-        <details className="mt-4 rounded-xl border border-[var(--festival-border)] bg-[var(--festival-surface)] px-4 py-3">
-          <summary className="cursor-pointer text-base font-semibold text-royal">
-            إدخال يدوي (بديل)
-          </summary>
-          <div className="mt-3 flex flex-col gap-3 sm:flex-row">
-            <input
-              value={manualId}
-              onChange={(e) => setManualId(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  lookupAndAdd(manualId);
-                  setManualId("");
-                }
-              }}
-              className="min-h-12 flex-1 rounded-xl border border-[var(--festival-border)] bg-white px-4 text-base"
-              placeholder="الصق المعرّف هنا"
-              disabled={lookingUp || submitting}
-            />
-            <button
-              type="button"
-              className="btn-primary min-h-12 px-6 text-base"
-              disabled={lookingUp || submitting || !manualId.trim()}
-              onClick={() => {
-                lookupAndAdd(manualId);
-                setManualId("");
-              }}
-            >
-              إضافة
-            </button>
-          </div>
-        </details>
+        {mode === "scan" ? (
+          <>
+            <div className="relative">
+              <QrScanner
+                onScan={lookupAndAdd}
+                onError={setError}
+                paused={lookingUp || submitting}
+              />
+              {lookingUp ? (
+                <div
+                  className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/50 text-lg font-bold text-white"
+                  aria-live="polite"
+                >
+                  جاري التحقق…
+                </div>
+              ) : null}
+            </div>
+
+            <details className="mt-4 rounded-xl border border-[var(--festival-border)] bg-[var(--festival-surface)] px-4 py-3">
+              <summary className="cursor-pointer text-base font-semibold text-royal">
+                إدخال المعرّف يدوياً
+              </summary>
+              <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+                <input
+                  value={manualId}
+                  onChange={(e) => setManualId(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      lookupAndAdd(manualId);
+                      setManualId("");
+                    }
+                  }}
+                  className="min-h-12 flex-1 rounded-xl border border-[var(--festival-border)] bg-white px-4 text-base"
+                  placeholder="الصق المعرّف هنا"
+                  disabled={lookingUp || submitting}
+                />
+                <button
+                  type="button"
+                  className="btn-primary min-h-12 px-6 text-base"
+                  disabled={lookingUp || submitting || !manualId.trim()}
+                  onClick={() => {
+                    lookupAndAdd(manualId);
+                    setManualId("");
+                  }}
+                >
+                  إضافة
+                </button>
+              </div>
+            </details>
+          </>
+        ) : (
+          <ParticipantNamePicker
+            onSelect={addByParticipant}
+            disabled={lookingUp || submitting}
+            onDemoChange={setDemo}
+          />
+        )}
       </div>
 
       {status ? (
@@ -373,7 +443,7 @@ export function AttendanceFlow({ initialId }: AttendanceFlowProps) {
         </div>
       ) : (
         <p className="text-center text-base text-[var(--festival-ink-muted)]">
-          امسح أول باركود لتبدأ القائمة
+          امسح باركوداً أو اختر اسماً لتبدأ القائمة
         </p>
       )}
     </div>

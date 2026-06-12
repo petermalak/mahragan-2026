@@ -1,12 +1,35 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  Html5Qrcode,
+  Html5QrcodeSupportedFormats,
+  type CameraDevice,
+} from "html5-qrcode";
 
 interface QrScannerProps {
   onScan: (decoded: string) => void;
   onError?: (message: string) => void;
   paused?: boolean;
+}
+
+type ScannerStatus = "loading" | "ready" | "error";
+
+async function pickCameraId(): Promise<string | MediaTrackConstraints> {
+  try {
+    const cameras: CameraDevice[] = await Html5Qrcode.getCameras();
+    if (!cameras.length) return { facingMode: "environment" };
+
+    const back = cameras.find((c) =>
+      /back|rear|environment|خلف|وخلف/i.test(c.label),
+    );
+    if (back) return back.id;
+
+    if (cameras.length > 1) return cameras[cameras.length - 1].id;
+    return cameras[0].id;
+  } catch {
+    return { facingMode: "environment" };
+  }
 }
 
 export function QrScanner({ onScan, onError, paused = false }: QrScannerProps) {
@@ -17,11 +40,19 @@ export function QrScanner({ onScan, onError, paused = false }: QrScannerProps) {
   const onScanRef = useRef(onScan);
   const onErrorRef = useRef(onError);
   const pausedRef = useRef(paused);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const lastScanRef = useRef("");
+  const lastScanAtRef = useRef(0);
+  const [status, setStatus] = useState<ScannerStatus>("loading");
+  const [retryKey, setRetryKey] = useState(0);
 
   onScanRef.current = onScan;
   onErrorRef.current = onError;
   pausedRef.current = paused;
+
+  const retry = useCallback(() => {
+    setStatus("loading");
+    setRetryKey((k) => k + 1);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -30,21 +61,44 @@ export function QrScanner({ onScan, onError, paused = false }: QrScannerProps) {
 
     container.innerHTML = "";
 
-    const scanner = new Html5Qrcode(elementId, { verbose: false });
+    const scanner = new Html5Qrcode(elementId, {
+      verbose: false,
+      formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true,
+      },
+    });
     scannerRef.current = scanner;
 
     const qrbox = (viewWidth: number, viewHeight: number) => {
-      const edge = Math.floor(Math.min(viewWidth, viewHeight) * 0.7);
+      const edge = Math.floor(Math.min(viewWidth, viewHeight) * 0.82);
       return { width: edge, height: edge };
     };
 
     (async () => {
       try {
+        const camera = await pickCameraId();
         await scanner.start(
-          { facingMode: "environment" },
-          { fps: 8, qrbox, aspectRatio: 1 },
+          camera,
+          {
+            fps: 12,
+            qrbox,
+            aspectRatio: 1,
+            disableFlip: false,
+          },
           (text) => {
-            if (active && !pausedRef.current) onScanRef.current(text);
+            if (!active || pausedRef.current) return;
+
+            const now = Date.now();
+            if (
+              text === lastScanRef.current &&
+              now - lastScanAtRef.current < 1500
+            ) {
+              return;
+            }
+            lastScanRef.current = text;
+            lastScanAtRef.current = now;
+            onScanRef.current(text);
           },
           () => {},
         );
@@ -52,7 +106,9 @@ export function QrScanner({ onScan, onError, paused = false }: QrScannerProps) {
       } catch {
         if (active) {
           setStatus("error");
-          onErrorRef.current?.("تعذّر فتح الكاميرا — استخدم الإدخال اليدوي بالأسفل");
+          onErrorRef.current?.(
+            "تعذّر فتح الكاميرا — استخدم «اختيار بالاسم» بالأسفل",
+          );
         }
       }
     })();
@@ -77,7 +133,7 @@ export function QrScanner({ onScan, onError, paused = false }: QrScannerProps) {
         container.innerHTML = "";
       })();
     };
-  }, [elementId]);
+  }, [elementId, retryKey]);
 
   return (
     <div className="qr-scanner-wrap">
@@ -87,11 +143,22 @@ export function QrScanner({ onScan, onError, paused = false }: QrScannerProps) {
           جاري فتح الكاميرا…
         </div>
       ) : null}
+
       {status === "error" ? (
         <div className="qr-scanner-placeholder qr-scanner-placeholder--error">
-          لم تُفتح الكاميرا
+          <p className="mb-3">لم تُفتح الكاميرا</p>
+          <button type="button" className="btn-primary text-base" onClick={retry}>
+            إعادة المحاولة
+          </button>
         </div>
       ) : null}
+
+      {status === "ready" ? (
+        <div className="qr-scanner-hint" aria-hidden>
+          ضع الباركود داخل الإطار
+        </div>
+      ) : null}
+
       <div
         ref={containerRef}
         id={elementId}

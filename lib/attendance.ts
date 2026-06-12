@@ -65,20 +65,43 @@ function findParticipantInList(
   );
 }
 
+/** One row per ID — keeps highest score if the sheet has duplicates. */
+function dedupeParticipantsById(participants: Participant[]): Participant[] {
+  const byId = new Map<string, Participant>();
+  for (const p of participants) {
+    const key = p.id.toLowerCase();
+    const existing = byId.get(key);
+    if (!existing || p.points > existing.points) {
+      byId.set(key, p);
+    }
+  }
+  return Array.from(byId.values());
+}
+
+function sortByPointsDesc(participants: Participant[]): Participant[] {
+  return [...participants].sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points;
+    return a.nameAr.localeCompare(b.nameAr, "ar");
+  });
+}
+
 export async function getParticipantsLeaderboard(): Promise<{
   participants: Participant[];
   demo: boolean;
 }> {
   const { participants: rows, demo } = await loadAllSheetParticipants();
   if (demo || rows.length === 0) {
-    const demos = [getDemoParticipant("demo-001"), getDemoParticipant("demo-002")]
-      .filter((p): p is Participant => Boolean(p));
+    const demos = sortByPointsDesc(
+      [getDemoParticipant("demo-001"), getDemoParticipant("demo-002")].filter(
+        (p): p is Participant => Boolean(p),
+      ),
+    );
     return { participants: demos, demo: true };
   }
 
-  const sorted = rows
-    .map(sheetParticipantToParticipant)
-    .sort((a, b) => b.points - a.points);
+  const sorted = sortByPointsDesc(
+    dedupeParticipantsById(rows.map(sheetParticipantToParticipant)),
+  );
 
   return { participants: sorted, demo: false };
 }
