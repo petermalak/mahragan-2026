@@ -71,7 +71,10 @@ export function QrScanner({ onScan, onError, paused = false }: QrScannerProps) {
     scannerRef.current = scanner;
 
     const qrbox = (viewWidth: number, viewHeight: number) => {
-      const edge = Math.floor(Math.min(viewWidth, viewHeight) * 0.82);
+      const edge = Math.max(
+        50,
+        Math.floor(Math.min(viewWidth, viewHeight) * 0.82),
+      );
       return { width: edge, height: edge };
     };
 

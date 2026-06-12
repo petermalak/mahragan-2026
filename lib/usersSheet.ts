@@ -1,4 +1,5 @@
 import type { sheets_v4 } from "googleapis";
+import { normalizeParticipantKey } from "./attendanceConstants";
 import { buildSheetRange, getGoogleSheetsClient, usersTabName } from "./googleSheets";
 import { resolveTeamSlug, teamLabelFromSlug } from "./teamResolve";
 import type { TeamSlug } from "./types";
@@ -155,7 +156,7 @@ export function rowToSheetParticipant(
   rowIndex: number,
   layout: UsersSheetLayout,
 ): SheetParticipant | null {
-  const id = row[layout.idCol]?.trim();
+  const id = normalizeParticipantKey(row[layout.idCol] ?? "");
   if (!id || id.toLowerCase() === "id") return null;
 
   const teamRaw =

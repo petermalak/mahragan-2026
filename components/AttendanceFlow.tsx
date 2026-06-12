@@ -85,7 +85,7 @@ export function AttendanceFlow({ initialId }: AttendanceFlowProps) {
 
       const id = parseParticipantIdFromQr(raw);
       if (!id) {
-        setError("لم يُقرأ معرّف صالح — حاول مرة أخرى");
+        setError("لم يُقرأ باركود صالح — جرّب مرة أخرى أو اختر بالاسم");
         return;
       }
 
@@ -300,7 +300,7 @@ export function AttendanceFlow({ initialId }: AttendanceFlowProps) {
                     }
                   }}
                   className="min-h-12 flex-1 rounded-xl border border-[var(--festival-border)] bg-white px-4 text-base"
-                  placeholder="الصق المعرّف هنا"
+                  placeholder="المعرّف أو الاسم الكامل"
                   disabled={lookingUp || submitting}
                 />
                 <button

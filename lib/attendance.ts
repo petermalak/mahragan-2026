@@ -9,6 +9,8 @@ import {
 } from "./googleSheets";
 import {
   getDemoParticipant,
+  normalizeNameForMatch,
+  normalizeParticipantKey,
   recordDemoAttendance,
   sheetParticipantToParticipant,
   type AttendanceRecordResult,
@@ -55,14 +57,72 @@ function parseNumber(value: unknown, fallback = 0): number {
   return Number.isFinite(n) ? n : fallback;
 }
 
+const PARTICIPANTS_CACHE_MS = 30_000;
+let participantsCache: {
+  at: number;
+  participants: SheetParticipant[];
+  demo: boolean;
+} | null = null;
+
+async function getSheetParticipantsForLookup(): Promise<{
+  participants: SheetParticipant[];
+  demo: boolean;
+}> {
+  const now = Date.now();
+  if (
+    participantsCache &&
+    now - participantsCache.at < PARTICIPANTS_CACHE_MS
+  ) {
+    return participantsCache;
+  }
+
+  const loaded = await loadAllSheetParticipants();
+  participantsCache = {
+    at: now,
+    participants: loaded.participants,
+    demo: loaded.demo,
+  };
+  return participantsCache;
+}
+
+type ParticipantLookupResult =
+  | { kind: "found"; participant: SheetParticipant }
+  | { kind: "ambiguous"; count: number }
+  | { kind: "not_found" };
+
 function findParticipantInList(
   participants: SheetParticipant[],
-  id: string,
-): SheetParticipant | null {
-  const normalized = id.toLowerCase();
-  return (
-    participants.find((p) => p.id.toLowerCase() === normalized) ?? null
+  query: string,
+): ParticipantLookupResult {
+  const q = normalizeParticipantKey(query);
+  if (!q) return { kind: "not_found" };
+
+  const qLower = q.toLowerCase();
+
+  const byId = participants.filter(
+    (p) => normalizeParticipantKey(p.id).toLowerCase() === qLower,
   );
+  if (byId.length === 1) return { kind: "found", participant: byId[0] };
+
+  if (qLower.length >= 8 && /^[0-9a-f-]+$/i.test(qLower.replace(/-/g, ""))) {
+    const compact = qLower.replace(/-/g, "");
+    const byPartialId = participants.filter((p) => {
+      const pid = normalizeParticipantKey(p.id).toLowerCase().replace(/-/g, "");
+      return pid === compact || pid.startsWith(compact) || compact.startsWith(pid);
+    });
+    if (byPartialId.length === 1) {
+      return { kind: "found", participant: byPartialId[0] };
+    }
+  }
+
+  const nameNorm = normalizeNameForMatch(q);
+  const byName = participants.filter(
+    (p) => normalizeNameForMatch(p.nameAr) === nameNorm,
+  );
+  if (byName.length === 1) return { kind: "found", participant: byName[0] };
+  if (byName.length > 1) return { kind: "ambiguous", count: byName.length };
+
+  return { kind: "not_found" };
 }
 
 /** One row per ID — keeps highest score if the sheet has duplicates. */
@@ -111,7 +171,7 @@ export async function lookupParticipant(id: string): Promise<{
   demo: boolean;
   error?: string;
 }> {
-  const normalized = id.trim();
+  const normalized = normalizeParticipantKey(id);
   if (!normalized) {
     return { participant: null, demo: false, error: "معرّف فارغ" };
   }
@@ -123,12 +183,26 @@ export async function lookupParticipant(id: string): Promise<{
   }
 
   try {
-    const { participants } = await loadAllSheetParticipants();
+    const { participants } = await getSheetParticipantsForLookup();
     const found = findParticipantInList(participants, normalized);
-    if (found) {
-      return { participant: sheetParticipantToParticipant(found), demo: false };
+    if (found.kind === "found") {
+      return {
+        participant: sheetParticipantToParticipant(found.participant),
+        demo: false,
+      };
     }
-    return { participant: null, demo: false, error: "لم يُعثر على المعرّف" };
+    if (found.kind === "ambiguous") {
+      return {
+        participant: null,
+        demo: false,
+        error: `يوجد ${found.count} مشاركين بهذا الاسم — اختر بالاسم من القائمة`,
+      };
+    }
+    return {
+      participant: null,
+      demo: false,
+      error: "لم يُعثر على المعرّف أو الاسم في الشيت",
+    };
   } catch (error) {
     console.error("lookupParticipant:", error);
     const demo = getDemoParticipant(normalized);

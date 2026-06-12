@@ -59,8 +59,21 @@ export function sheetParticipantToParticipant(
   };
 }
 
+/** Strip invisible chars often copied from Sheets or QR payloads. */
+export function normalizeParticipantKey(value: string): string {
+  return value
+    .trim()
+    .replace(/^\ufeff/, "")
+    .replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, "")
+    .replace(/\s+/g, " ");
+}
+
+export function normalizeNameForMatch(value: string): string {
+  return normalizeParticipantKey(value).replace(/\s+/g, " ").trim();
+}
+
 export function parseParticipantIdFromQr(raw: string): string {
-  const trimmed = raw.trim();
+  const trimmed = normalizeParticipantKey(raw);
   if (!trimmed) return "";
 
   try {
@@ -70,7 +83,7 @@ export function parseParticipantIdFromQr(raw: string): string {
         url.searchParams.get("id") ??
         url.searchParams.get("ID") ??
         url.pathname.split("/").filter(Boolean).pop();
-      if (fromQuery) return fromQuery.trim();
+      if (fromQuery) return normalizeParticipantKey(fromQuery);
     }
   } catch {
     /* not a URL */
@@ -79,7 +92,7 @@ export function parseParticipantIdFromQr(raw: string): string {
   if (trimmed.startsWith("{")) {
     try {
       const parsed = JSON.parse(trimmed) as { id?: string; ID?: string };
-      return (parsed.id ?? parsed.ID ?? "").trim();
+      return normalizeParticipantKey(parsed.id ?? parsed.ID ?? "");
     } catch {
       /* ignore */
     }
